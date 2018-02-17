@@ -112,8 +112,30 @@ class SelectorDIC(ModelSelector):
     def select(self):
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-        # TODO implement model selection based on DIC scores
-        raise NotImplementedError
+        best_model = None
+        best_score = -float('inf')
+
+        for number_of_states in range(self.min_n_components, self.max_n_components + 1):
+            try:
+                current_model = self.base_model(number_of_states)
+                curr_score = current_model.score(self.X, self.lengths)
+                score_sum = 0
+
+                for word in self.hwords:
+                    if word != self.this_word:
+                        x_w, l_w = self.hwords[word]
+                        score_sum += current_model.score(x_w, l_w)
+
+                # DIC = log(P(X(i)) - 1 / (M - 1)SUM(log(P(X(all but i))
+                dic = curr_score - (1 / (len(self.hwords)-1) * score_sum)
+
+                if dic > best_score:
+                    best_score = dic
+                    best_model = current_model
+            except ValueError:
+                pass  # ignore failed iterations
+
+        return best_model
 
 
 class SelectorCV(ModelSelector):
@@ -121,7 +143,7 @@ class SelectorCV(ModelSelector):
 
     '''
 
-    
+
     def select(self):
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
