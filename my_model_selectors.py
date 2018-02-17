@@ -121,8 +121,31 @@ class SelectorCV(ModelSelector):
 
     '''
 
+    
     def select(self):
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-        # TODO implement model selection using CV
-        raise NotImplementedError
+        best_score = -float('inf')
+        best_model = None
+
+        for number_of_states in range(self.min_n_components, self.max_n_components+1):
+            try:
+                current_model = self.base_model(number_of_states)
+                folds = KFold().split(self.sequences)
+                current_score = 0
+                count = 0
+                for train, test in folds:
+                    train_x, train_lengths = combine_sequences(train, self.sequences)
+                    test_x, test_lengths = combine_sequences(test, self.sequences)
+
+                    current_score += current_model.score(test_x, test_lengths)
+                    count += 1
+            except ValueError:
+                pass    # ignore failed iterations
+            count = 1 if count == 0 else count
+            average_score = current_score / count
+
+            if average_score > best_score:
+                best_model = current_model
+                best_score = average_score
+        return best_model
