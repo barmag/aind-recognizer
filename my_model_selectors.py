@@ -92,7 +92,7 @@ class SelectorBIC(ModelSelector):
                 if bic < best_score:
                     best_score = bic
                     best_model = current_model
-            except ValueError:
+            except:
                 pass    # ignore failed iterations
 
         return best_model
@@ -132,7 +132,7 @@ class SelectorDIC(ModelSelector):
                 if dic > best_score:
                     best_score = dic
                     best_model = current_model
-            except ValueError:
+            except:
                 pass  # ignore failed iterations
 
         return best_model
@@ -162,7 +162,7 @@ class SelectorCV(ModelSelector):
 
                     current_score += current_model.score(test_x, test_lengths)
                     count += 1
-            except ValueError:
+            except:
                 pass    # ignore failed iterations
             count = 1 if count == 0 else count
             average_score = current_score / count
